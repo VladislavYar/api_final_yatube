@@ -35,3 +35,10 @@ class FollowPermission(BasePermission):
         if not request.user.is_authenticated:
             raise PermissionDenied()
         return True
+
+    def has_object_permission(self, request, view, obj):
+        if request.method in SAFE_METHODS:
+            return True
+        elif not obj.user == request.user:
+            raise PermissionNotAuthorChangeDenied()
+        return True
