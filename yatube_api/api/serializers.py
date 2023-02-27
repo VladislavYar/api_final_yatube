@@ -12,7 +12,7 @@ class PostSerializer(serializers.ModelSerializer):
                                           slug_field='username')
 
     class Meta:
-        fields = ('id', 'author', 'text', 'image', 'group', 'pub_date')
+        fields = ('id', 'author', 'text', 'pub_date', 'image', 'group')
         model = Post
 
 
