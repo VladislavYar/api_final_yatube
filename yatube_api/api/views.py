@@ -48,7 +48,7 @@ class FollowViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         user_id = self.request.user
-        following_id = serializer.validated_data['following']
+        following_id = serializer.validated_data.get('following')
         follow_exists = Follow.objects.filter(user=user_id,
                                               following=following_id).exists()
         if follow_exists or user_id == following_id:
