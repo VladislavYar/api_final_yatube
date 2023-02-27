@@ -1,6 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, filters
 from rest_framework.pagination import LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 
 from posts.models import Post, Group, Follow
 from api.serializers import (
@@ -11,7 +12,6 @@ from api.permissions import (
     UpdateDestroyPermission, ReadOnlyPermission,
     FollowPermission
 )
-from api.exceptions import NotUniqueFollowDenied
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -19,6 +19,8 @@ class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
     permission_classes = (UpdateDestroyPermission, )
     pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend, )
+    filterset_fields = ('author', 'group')
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -47,18 +49,10 @@ class FollowViewSet(viewsets.ModelViewSet):
     search_fields = ('following__username', )
 
     def perform_create(self, serializer):
-        user_id = self.request.user
-        following_id = serializer.validated_data.get('following')
-        follow_exists = Follow.objects.filter(user=user_id,
-                                              following=following_id).exists()
-        if follow_exists or user_id == following_id:
-            raise NotUniqueFollowDenied()
         serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        user_id = self.request.user
-        follow = Follow.objects.filter(user=user_id)
-        return follow
+        return self.request.user.follower.all()
 
 
 class GroupViewSet(viewsets.ModelViewSet):
